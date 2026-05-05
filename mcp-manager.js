@@ -178,7 +178,7 @@ function weatherSearch(location) {
 
     const geoOpts = {
       headers: {
-        'User-Agent': 'OllamaChat-MCP-Bridge/1.0 (gardner.scot@gmail.com)',
+        'User-Agent': 'OllamaChat-MCP-Bridge/1.0 (github.com/gardnerscot/ollamachat-mcp-bridge)',
         'Accept': 'application/json',
       },
     };

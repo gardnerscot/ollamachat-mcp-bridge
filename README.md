@@ -5,7 +5,9 @@ Spawns stdio-based MCP servers as child processes and exposes their tools over H
 ## Quick Start
 
 ```bash
-cd /Users/scotgardner/.cola/outputs/MCP-to-HTTP-bridge-server
+git clone https://github.com/gardnerscot/ollamachat-mcp-bridge
+cd ollamachat-mcp-bridge
+cp mcp-config.example.json mcp-config.json
 npm install
 ./start.sh
 ```

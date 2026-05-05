@@ -14,7 +14,9 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # Brave Search API key for built-in web_search tool
-export BRAVE_SEARCH_API_KEY="${BRAVE_SEARCH_API_KEY:-BSAabk-LqisrrHJCkat-eWP6QOF_hXW}"
+# Get a free key at https://brave.com/search/api/
+# Set it in your environment before running: export BRAVE_SEARCH_API_KEY=your_key_here
+export BRAVE_SEARCH_API_KEY="${BRAVE_SEARCH_API_KEY:-}"
 
 echo "[start.sh] Starting MCP-to-HTTP bridge..."
 exec node server.js "$@"
