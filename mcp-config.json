@@ -1,0 +1,25 @@
+{
+  "reminders": {
+    "command": "npx",
+    "args": ["-y", "reminders-mcp"],
+    "env": {},
+    "disabled": false
+  },
+  "notes": {
+    "command": "npx",
+    "args": ["-y", "apple-notes-mcp"],
+    "env": {},
+    "disabled": false
+  },
+  "mail": {
+    "command": "uv",
+    "args": [
+      "run",
+      "--directory",
+      "/Users/scotgardner/.cola/outputs/Build-Spark-Mail-MCP-server-for-M.E.M.U./spark-mail-mcp",
+      "spark-mail-mcp"
+    ],
+    "env": {},
+    "disabled": false
+  }
+}
