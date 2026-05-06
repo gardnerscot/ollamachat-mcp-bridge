@@ -10,8 +10,23 @@
 
 const McpProcess = require('./mcp-process');
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 const SERVER_PREFIX_SEP = '__';
+const ENV_FILE = path.join(__dirname, '.env');
+
+// ─── .env loader ─────────────────────────────────────────────────────────────
+function loadEnv() {
+  try {
+    const lines = fs.readFileSync(ENV_FILE, 'utf8').split('\n');
+    for (const line of lines) {
+      const match = line.match(/^([^#=]+)=(.*)$/);
+      if (match) process.env[match[1].trim()] = match[2].trim();
+    }
+  } catch (_) { /* no .env yet, that's fine */ }
+}
+loadEnv();
 
 // ─── Built-in tools (no MCP server needed) ────────────────────────────────────
 
@@ -88,7 +103,19 @@ async function executeBuiltinTool(toolName, args) {
 }
 
 function getBraveKey() { return braveKey; }
-function setBraveKey(key) { braveKey = key; }
+function setBraveKey(key) {
+  braveKey = key;
+  // Persist to .env so it survives bridge restarts
+  try {
+    let envContent = '';
+    try { envContent = fs.readFileSync(ENV_FILE, 'utf8'); } catch (_) {}
+    const lines = envContent.split('\n').filter(l => !l.startsWith('BRAVE_SEARCH_API_KEY='));
+    lines.push(`BRAVE_SEARCH_API_KEY=${key}`);
+    fs.writeFileSync(ENV_FILE, lines.join('\n').replace(/\n+$/, '') + '\n', 'utf8');
+  } catch (e) {
+    console.error('[mcp-manager] Failed to persist Brave key to .env:', e.message);
+  }
+}
 
 function braveSearch(query, count) {
   return new Promise((resolve, reject) => {
