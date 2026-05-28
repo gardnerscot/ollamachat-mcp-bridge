@@ -21,6 +21,7 @@ const fs = require('fs');
 const path = require('path');
 
 const { McpManager, getBraveKey, setBraveKey } = require('./mcp-manager');
+const { createSSEHandler } = require('./sse-handler');
 
 // ─── CLI / env args ───────────────────────────────────────────────────────────
 
@@ -96,9 +97,9 @@ function buildApp(manager) {
   });
 
   // ── GET /tools ─────────────────────────────────────────────────────────────
-  app.get('/tools', (_req, res) => {
+  app.get('/tools', async (_req, res) => {
     try {
-      const tools = manager.getTools();
+      const tools = await manager.getTools();
       res.json({ tools });
     } catch (err) {
       logError('GET /tools failed', err);
@@ -107,9 +108,9 @@ function buildApp(manager) {
   });
 
   // ── GET /tools/openai ──────────────────────────────────────────────────────
-  app.get('/tools/openai', (_req, res) => {
+  app.get('/tools/openai', async (_req, res) => {
     try {
-      const tools = manager.getToolsOpenAI();
+      const tools = await manager.getToolsOpenAI();
       res.json(tools);
     } catch (err) {
       logError('GET /tools/openai failed', err);
@@ -141,27 +142,100 @@ function buildApp(manager) {
     }
   });
 
+  // ── Custom tools CRUD ─────────────────────────────────────────────────────
+  const CUSTOM_TOOLS_PATH = path.join(__dirname, 'custom-tools.json');
+
+  function loadCustomTools() {
+    try {
+      if (fs.existsSync(CUSTOM_TOOLS_PATH)) {
+        return JSON.parse(fs.readFileSync(CUSTOM_TOOLS_PATH, 'utf8'));
+      }
+    } catch (e) {
+      logError('Failed to load custom tools', e);
+    }
+    return [];
+  }
+
+  function saveCustomTools(tools) {
+    fs.writeFileSync(CUSTOM_TOOLS_PATH, JSON.stringify(tools, null, 2), 'utf8');
+  }
+
+  app.get('/custom-tools', (_req, res) => {
+    res.json({ tools: loadCustomTools() });
+  });
+
+  app.post('/custom-tools', (req, res) => {
+    const { name, description, inputSchema, command } = req.body || {};
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ error: 'Bad request', detail: '"name" (string) is required' });
+    }
+    if (!command || typeof command !== 'string') {
+      return res.status(400).json({ error: 'Bad request', detail: '"command" (string) is required' });
+    }
+    const tools = loadCustomTools();
+    const existing = tools.findIndex(t => t.name === name);
+    const tool = {
+      name,
+      description: description || '',
+      inputSchema: inputSchema || { type: 'object', properties: {} },
+      command,
+      server: 'custom',
+    };
+    if (existing >= 0) {
+      tools[existing] = tool;
+    } else {
+      tools.push(tool);
+    }
+    saveCustomTools(tools);
+    log(`Custom tool ${existing >= 0 ? 'updated' : 'added'}: ${name}`);
+    res.json({ ok: true, tool });
+  });
+
+  app.delete('/custom-tools/:name', (req, res) => {
+    const name = decodeURIComponent(req.params.name);
+    const tools = loadCustomTools();
+    const filtered = tools.filter(t => t.name !== name);
+    if (filtered.length === tools.length) {
+      return res.status(404).json({ error: 'Not found', detail: `No custom tool named "${name}"` });
+    }
+    saveCustomTools(filtered);
+    log(`Custom tool deleted: ${name}`);
+    res.json({ ok: true });
+  });
+
   // ── GET/POST /config ───────────────────────────────────────────────────────
   app.get('/config', (_req, res) => {
-    res.json({ braveSearchApiKey: getBraveKey() });
+    res.json({
+      braveSearchApiKey: getBraveKey(),
+    });
   });
 
   app.post('/config', (req, res) => {
     const { braveSearchApiKey } = req.body || {};
-    if (typeof braveSearchApiKey === 'string') {
+    let updated = [];
+    if (typeof braveSearchApiKey === 'string' && braveSearchApiKey) {
       setBraveKey(braveSearchApiKey);
-      log(`Brave API key updated`);
-      res.json({ success: true });
+      updated.push('braveSearchApiKey');
+    }
+    if (updated.length > 0) {
+      log(`Config updated: ${updated.join(', ')}`);
+      res.json({ success: true, updated });
     } else {
       res.status(400).json({ error: 'Bad request', detail: 'Body must include "braveSearchApiKey" (string)' });
     }
   });
 
+  // ── GET /sse ──────────────────────────────────────────────────────────────
+  // ── POST /messages ────────────────────────────────────────────────────────
+  const sse = createSSEHandler(manager);
+  app.get('/sse', sse.handleSSE);
+  app.post('/messages', sse.handleMessages);
+
   // ── 404 fallback ───────────────────────────────────────────────────────────
   app.use((req, res) => {
     res.status(404).json({
       error: 'Not found',
-      availableEndpoints: ['GET /health', 'GET /tools', 'GET /tools/openai', 'POST /call', 'GET /config', 'POST /config'],
+      availableEndpoints: ['GET /health', 'GET /sse', 'POST /messages', 'GET /tools', 'GET /tools/openai', 'POST /call', 'GET /config', 'POST /config'],
     });
   });
 

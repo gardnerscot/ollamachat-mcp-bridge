@@ -1,0 +1,60 @@
+[
+  {
+    "name": "custom__music_play",
+    "description": "Play a playlist in Apple Music by name. Use when you want to hear music.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Playlist name to play"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "command": "osascript -e 'tell application \"Music\" to play playlist \"${name}\"'",
+    "server": "custom"
+  },
+  {
+    "name": "custom__music_pause",
+    "description": "Pause Apple Music playback.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "command": "osascript -e 'tell application \"Music\" to pause'",
+    "server": "custom"
+  },
+  {
+    "name": "custom__music_next",
+    "description": "Skip to the next track in Apple Music.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "command": "osascript -e 'tell application \"Music\" to next track'",
+    "server": "custom"
+  },
+  {
+    "name": "custom__music_now",
+    "description": "Show what is currently playing in Apple Music.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "command": "osascript -e 'tell application \"Music\" to get name of current track & \" by \" & artist of current track'",
+    "server": "custom"
+  },
+  {
+    "name": "custom__verse_of_the_day",
+    "description": "Get a random verse from Proverbs. Use for daily wisdom, encouragement, or to start the day with scripture.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {}
+    },
+    "command": "bash /Users/scotgardner/cola/outputs/MCP-to-HTTP-bridge-server/verse-of-the-day.sh",
+    "server": "custom"
+  }
+]

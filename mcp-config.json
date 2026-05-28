@@ -3,23 +3,35 @@
     "command": "npx",
     "args": ["-y", "reminders-mcp"],
     "env": {},
-    "disabled": false
+    "disabled": true
   },
   "notes": {
     "command": "npx",
     "args": ["-y", "apple-notes-mcp"],
     "env": {},
-    "disabled": false
+    "disabled": true
   },
   "mail": {
     "command": "uv",
     "args": [
       "run",
       "--directory",
-      "/Users/scotgardner/.cola/outputs/Build-Spark-Mail-MCP-server-for-M.E.M.U./spark-mail-mcp",
+      "/Users/scotgardner/cola/outputs/Build-Spark-Mail-MCP-server-for-M.E.M.U./spark-mail-mcp",
       "spark-mail-mcp"
     ],
     "env": {},
     "disabled": false
+  },
+  "pantry": {
+    "command": "node",
+    "args": ["/Users/scotgardner/Library/Application Support/memu-bot/agent-output/pantry-mcp-server/index.js"],
+    "env": {},
+    "disabled": false
+  },
+  "memu": {
+    "command": "node",
+    "args": ["/Users/scotgardner/Library/Application Support/memu-bot/agent-output/memu-memory-mcp/index.js"],
+    "env": {},
+    "disabled": true
   }
 }
