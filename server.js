@@ -22,6 +22,7 @@ const path = require('path');
 
 const { McpManager, getBraveKey, setBraveKey } = require('./mcp-manager');
 const { createSSEHandler } = require('./sse-handler');
+const { createStreamableHandler } = require('./streamable-handler');
 
 // ─── CLI / env args ───────────────────────────────────────────────────────────
 
@@ -231,11 +232,17 @@ function buildApp(manager) {
   app.get('/sse', sse.handleSSE);
   app.post('/messages', sse.handleMessages);
 
+  // ── POST /mcp — MCP Streamable HTTP transport (2025-03-26 / 2025-06-18) ──
+  const streamable = createStreamableHandler(manager);
+  app.post('/mcp', streamable.handlePost);
+  app.get('/mcp', streamable.handleGet);
+  app.delete('/mcp', streamable.handleDelete);
+
   // ── 404 fallback ───────────────────────────────────────────────────────────
   app.use((req, res) => {
     res.status(404).json({
       error: 'Not found',
-      availableEndpoints: ['GET /health', 'GET /sse', 'POST /messages', 'GET /tools', 'GET /tools/openai', 'POST /call', 'GET /config', 'POST /config'],
+      availableEndpoints: ['GET /health', 'GET /sse', 'POST /messages', 'POST /mcp', 'GET /tools', 'GET /tools/openai', 'POST /call', 'GET /config', 'POST /config'],
     });
   });
 
