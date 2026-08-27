@@ -56,5 +56,25 @@
     },
     "command": "bash /Users/scotgardner/cola/outputs/MCP-to-HTTP-bridge-server/verse-of-the-day.sh",
     "server": "custom"
+  },
+  {
+    "name": "custom__calendar_events",
+    "description": "Get calendar events from the Mac's Calendar app (Google + iCloud calendars included). range: today | tomorrow | week. Returns lines of 'Day date time | event | calendar | location'.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "range": {
+          "type": "string",
+          "enum": [
+            "today",
+            "tomorrow",
+            "week"
+          ],
+          "description": "Window to fetch; omit for today"
+        }
+      }
+    },
+    "command": "bash /Users/scotgardner/cola/outputs/MCP-to-HTTP-bridge-server/calendar-events.sh ${range}",
+    "server": "custom"
   }
 ]
